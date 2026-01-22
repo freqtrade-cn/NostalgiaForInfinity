@@ -3848,24 +3848,16 @@ class NostalgiaForInfinityX7(IStrategy):
     # Populate Indicators
     # ---------------------------------------------------------------------------------------------
     def populate_indicators(self, df: DataFrame, metadata: dict) -> DataFrame:
-        tik = time.perf_counter()
+        tik = time.perf_counter() # 记录开始时间，用于后面统计这次计算指标耗时（perf_counter 精度高）。
         """
         --> BTC informative indicators
         ___________________________________________________________________________________________
         """
         if self.config["stake_currency"] in [
-            "USDT",
-            "BUSD",
-            "USDC",
-            "DAI",
-            "TUSD",
-            "FDUSD",
-            "PAX",
-            "USD",
-            "EUR",
-            "GBP",
-            "TRY",
+          "USDT","BUSD","USDC","DAI","TUSD","FDUSD","PAX","USD","EUR","GBP","TRY",
         ]:
+            # 如果你的计价货币（stake_currency）属于常见法币/稳定币集合，就用它来拼 BTC 对，比如 BTC/USDT、BTC/EUR。
+            # 这里的目的是：让 BTC 的“市场方向”指标永远存在，不管你交易什么币，都能参考 BTC 的大盘状态。
             if ("trading_mode" in self.config) and (self.config["trading_mode"] in ["futures", "margin"]):
                 btc_info_pair = f"BTC/{self.config['stake_currency']}:{self.config['stake_currency']}"
             else:
@@ -3877,6 +3869,8 @@ class NostalgiaForInfinityX7(IStrategy):
                 btc_info_pair = "BTC/USDT"
 
         for btc_info_timeframe in self.btc_info_timeframes:
+            # 遍历你配置的 BTC 信息周期列表（可能是 ["15m","1h","4h","1d"] 之类）。
+            # 意图：在 5m 的 df 上也能看到 BTC 的 1h/4h/1d 指标。
             btc_informative = self.btc_info_switcher(btc_info_pair, btc_info_timeframe, metadata)
             df = merge_informative_pair(df, btc_informative, self.timeframe, btc_info_timeframe, ffill=True)
             # Customize what we drop - in case we need to maintain some BTC informative ohlcv data
@@ -23506,38 +23500,12 @@ class NostalgiaForInfinityX7(IStrategy):
     ###############################################################################################
 
     # COMMON FUNCTIONS FOR BOTH LONG AND SHORT SIDE ENDS HERE
-
-    ###############################################################################################
-
-    #  /$$        /$$$$$$  /$$   /$$  /$$$$$$         /$$$$$$  /$$$$$$ /$$$$$$$  /$$$$$$$$
-    # | $$       /$$__  $$| $$$ | $$ /$$__  $$       /$$__  $$|_  $$_/| $$__  $$| $$_____/
-    # | $$      | $$  \ $$| $$$$| $$| $$  \__/      | $$  \__/  | $$  | $$  \ $$| $$
-    # | $$      | $$  | $$| $$ $$ $$| $$ /$$$$      |  $$$$$$   | $$  | $$  | $$| $$$$$
-    # | $$      | $$  | $$| $$  $$$$| $$|_  $$       \____  $$  | $$  | $$  | $$| $$__/
-    # | $$      | $$  | $$| $$\  $$$| $$  \ $$       /$$  \ $$  | $$  | $$  | $$| $$
-    # | $$$$$$$$|  $$$$$$/| $$ \  $$|  $$$$$$/      |  $$$$$$/ /$$$$$$| $$$$$$$/| $$$$$$$$
-    # |________/ \______/ |__/  \__/ \______/        \______/ |______/|_______/ |________/
-
     # Long Side Functions for handling long orders
     # ---------------------------------------------------------------------------------------------
 
     ###############################################################################################
 
     # LONG EXIT FUNCTIONS STARTS HERE
-
-    ###############################################################################################
-
-    #
-    #  /$$        /$$$$$$  /$$   /$$  /$$$$$$        /$$$$$$$$ /$$   /$$ /$$$$$$ /$$$$$$$$
-    # | $$       /$$__  $$| $$$ | $$ /$$__  $$      | $$_____/| $$  / $$|_  $$_/|__  $$__/
-    # | $$      | $$  \ $$| $$$$| $$| $$  \__/      | $$      |  $$/ $$/  | $$     | $$
-    # | $$      | $$  | $$| $$ $$ $$| $$ /$$$$      | $$$$$    \  $$$$/   | $$     | $$
-    # | $$      | $$  | $$| $$  $$$$| $$|_  $$      | $$__/     >$$  $$   | $$     | $$
-    # | $$      | $$  | $$| $$\  $$$| $$  \ $$      | $$       /$$/\  $$  | $$     | $$
-    # | $$$$$$$$|  $$$$$$/| $$ \  $$|  $$$$$$/      | $$$$$$$$| $$  \ $$ /$$$$$$   | $$
-    # |________/ \______/ |__/  \__/ \______/       |________/|__/  |__/|______/   |__/
-    #
-
     # Long Exit Normal
     # ---------------------------------------------------------------------------------------------
     def long_exit_normal(
